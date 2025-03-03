@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v6.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v6.0": {
+      "拼图游戏/1.0.0": {
+        "runtime": {
+          "拼图游戏.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "拼图游戏/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

@@ -1,0 +1,87 @@
+#include <algorithm>
+#include <iostream>
+#include <ostream>
+#include <string>
+#include <vector>
+using namespace std;
+//数据结构
+int n;
+int** s;
+int best=10000000;
+char start;
+string res;
+string remain="abcdefghigklmnopqrstuvwxyz";
+bool exist(char b)
+{
+    for(int i=0;i<remain.length();i++)
+    {
+        if(remain[i]==b)return true;
+    }
+    return false;
+}
+void del(char b)
+{
+    for(int i=0;i<remain.length();i++)
+    {
+        if(remain[i]==b)remain.erase(i,1);
+    }
+} 
+void getin()
+{
+    char left;
+    char right;
+    int l;
+    while(cin>>left>>right>>l)
+    {
+        if(left=='!')break;
+        s[left-97][right-97]=l;
+        s[right-97][left-97]=l;
+    }
+    del(start);
+}
+//分治法求全排列+剪枝
+void search(string rm,int low,int len){
+    char mid;
+    int g=len;
+    string a=rm;
+    for(int i=0;i<a.length();i++){
+        mid=a[i];
+        a[i]=a[0];
+        a[0]=mid; 
+        res+=a[0];
+        a.erase(0,1);
+        g+=s[mid-97][res[res.length()-2]-97];
+        if(g<best)search(a,low+1,g);
+        res.pop_back();
+        a=rm;
+        g=len;
+    }
+    if(rm.size()==0){
+        len+=s[res.back()-97][start-97];
+        if(len<best)
+        best=len;
+        cout<<"节点顺序："<<res<<"距离："<<len<<endl;
+    }
+}
+int main() {    
+    cin>>n>>start;
+    s=new int *[n];
+    for(int i=0;i<n;i++)
+    {
+        s[i]=new int [n];
+    }
+
+    for(int i=0;i<n;i++)
+    {
+        for(int j=0;j<n;j++)
+        {
+            s[i][j]=1000000;
+        }
+    }
+    remain.erase(n,26-n);
+    res+=start;
+    getin();
+    search(remain,1,0);
+    cout<<"最短路径为："<<best;
+    return 0;
+}

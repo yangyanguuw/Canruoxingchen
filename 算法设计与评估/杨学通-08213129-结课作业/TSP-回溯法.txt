@@ -1,0 +1,103 @@
+#include <algorithm>
+#include <iostream>
+#include <ostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+int n;
+int best=10000000;
+char str;
+string res;
+string remain="abcdefghigklmnopqrstuvwxyz";
+bool exist(char b)
+{
+    for(int i=0;i<remain.length();i++)
+    {
+        if(remain[i]==b)return true;
+    }
+    return false;
+}
+void del(char b)
+{
+    for(int i=0;i<remain.length();i++)
+    {
+        if(remain[i]==b)remain.erase(i,1);
+    }
+} 
+void getin(int **s)
+{
+    char left;
+    char right;
+    int l;
+    while(cin>>left>>right>>l)
+    {
+        if(left=='!')break;
+        s[left-97][right-97]=l;
+        s[right-97][left-97]=l;
+    }
+    del(str);
+}
+//计算剩余城市的最小出度和
+int out(int **s,string rm){
+    if(rm.size()==1)return s[rm[0]-97][str-97];
+    int sum=0;
+    int min;
+    for(int i=0;i<rm.size();i++){
+        min=10000;
+        for(int j=0;j<rm.size();j++)
+        {
+            if(i!=j&&s[rm[i]-97][rm[j]-97]<min)
+            {
+                min=s[rm[i]-97][rm[j]-97];
+            }
+        }
+        sum+=min;
+    }
+    return sum;
+}
+//深度优先搜索+回溯+剪枝
+void search(int **s,int len,string rm,string res,char start){
+    if(rm.size()==0){
+        len+=s[start-97][str-97];
+        if(best>len)best=len;
+        cout<<"节点顺序："<<res<<"距离："<<len<<endl;
+    }
+    else{
+        int x=len;
+        char y;
+        for(int i=0;i<rm.size();i++){
+            x+=s[start-97][rm[i]-97];
+            y=rm[i];
+            res+=y;
+            rm.erase(i,1);
+            if(x>best)return;//回溯
+            if(best>x+out(s,rm)){search(s,x,rm,res,y);}//剪枝
+            rm.insert(i,1,y);
+            x-=s[start-97][rm[i]-97];
+            res.pop_back();
+        }
+    }
+}
+int main() {    
+    cin>>n>>str;
+    int **s=new int *[n];
+    for(int i=0;i<n;i++)
+    {
+        s[i]=new int [n];
+    }
+
+    for(int i=0;i<n;i++)
+    {
+        for(int j=0;j<n;j++)
+        {
+            s[i][j]=1000000;
+        }
+    }
+    remain.erase(n,26-n);
+    res+=str;
+    getin(s);
+    search(s,0,remain,res,str);
+    cout<<"最短路径为："<<best;
+    return 0;
+}

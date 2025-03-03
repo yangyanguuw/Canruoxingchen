@@ -1,0 +1,125 @@
+客户端
+
+
+#include <WinSock2.h>
+#include <iostream>
+#pragma comment(lib, "ws2_32.lib")
+int main(void) {
+
+	WORD wVersion;
+	WSADATA wsaData;
+	int err;
+
+	wVersion = MAKEWORD(1, 1);
+	err = WSAStartup(wVersion, &wsaData);
+	if (err != 0) {
+		return err;
+	}
+
+	if (LOBYTE(wsaData.wVersion) != 1 || HIBYTE(wsaData.wVersion) != 1) {
+		WSACleanup();
+		return -1;
+	}
+
+
+	SOCKET sockCli = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	SOCKADDR_IN addrSrv;
+	addrSrv.sin_addr.S_un.S_addr = inet_addr("192.168.220.176");
+	addrSrv.sin_family = AF_INET;
+	addrSrv.sin_port = htons(6001);
+
+	SOCKADDR_IN addrCli;
+	addrCli.sin_addr.S_un.S_addr = inet_addr("192.168.220.199");
+	addrCli.sin_family = AF_INET;
+	addrCli.sin_port = htons(6001);
+
+	int len = sizeof(SOCKADDR);
+
+	char sendBuf[] = "你好，服务器！";
+	char recvBuf[100];
+
+	std::cout << "send to Server: " << sendBuf << std::endl;
+	sendto(sockCli, sendBuf, strlen(sendBuf) + 1, 0, (SOCKADDR*)&addrSrv, len);
+
+	recvfrom(sockCli, recvBuf, 100, 0, (SOCKADDR*)&addrSrv, &len);
+	std::cout << "recv from: " << recvBuf << std::endl;
+
+
+	closesocket(sockCli);
+	WSACleanup();
+
+	system("pause");
+	return 0;
+}
+
+
+
+
+
+
+服务器
+
+#include <WinSock2.h>
+#include <iostream>
+
+#pragma comment(lib, "ws2_32.lib")
+
+int main(void) {
+	// 初始化套接字库
+	WORD wVersion;
+	WSADATA wsaData;
+	int err;
+
+	wVersion = MAKEWORD(1, 1);
+	err = WSAStartup(wVersion, &wsaData);
+	if (err != 0) {
+		return err;
+	}
+
+	if (LOBYTE(wsaData.wVersion) != 1 || HIBYTE(wsaData.wVersion) != 1) {
+		WSACleanup();
+		return -1;
+	}
+
+	// 创建套接字
+	SOCKET sockSrv = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
+	SOCKADDR_IN addrSrv;
+	addrSrv.sin_addr.S_un.S_addr = inet_addr("192.168.220.176");
+	addrSrv.sin_family = AF_INET;
+	addrSrv.sin_port = htons(6001);
+
+	// 绑定到本机6001端口
+	bind(sockSrv, (SOCKADDR *)&addrSrv, sizeof(SOCKADDR));
+
+	// 接收请求，处理请求
+	SOCKADDR_IN addrCli;
+	int len = sizeof(SOCKADDR);
+	addrCli.sin_addr.S_un.S_addr = inet_addr("192.167.220.199");
+	addrCli.sin_family = AF_INET;
+	addrCli.sin_port = htons(6001);
+
+	char sendBuf[] = "Hello,Client！";
+	char recvBuf[100];
+
+	std::cout << "start UDP server with port 6001" << std::endl;
+	while (1) {
+		// 接收数据
+		recvfrom(sockSrv, recvBuf, 100, 0, (SOCKADDR *)&addrCli, &len);
+		std::cout << "Recv:" << recvBuf << std::endl;
+		
+
+		// 发送数据
+		sendto(sockSrv, sendBuf, strlen(sendBuf) + 1, 0, (SOCKADDR *)&addrCli, len);
+		std::cout << "Send:" << sendBuf << std::endl;
+	}
+
+	closesocket(sockSrv);
+	WSACleanup();
+
+	return 0;
+}
+
+
+
+

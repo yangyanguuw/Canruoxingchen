@@ -1,0 +1,86 @@
+#include <algorithm>
+#include <iostream>
+#include <ostream>
+#include <string>
+#include <vector>
+using namespace std;
+//数据结构
+int n;//城市数
+int best=10000000;//最短路径
+char str;//开始城市
+string res;//访问城市次序
+string remain="abcdefghigklmnopqrstuvwxyz";//未访问城市列表
+//输入方法
+bool exist(char b)
+{
+    for(int i=0;i<remain.length();i++)
+    {
+        if(remain[i]==b)return true;
+    }
+    return false;
+}
+void del(char b)
+{
+    for(int i=0;i<remain.length();i++)
+    {
+        if(remain[i]==b)remain.erase(i,1);
+    }
+} 
+void getin(int **s)
+{
+    char left;
+    char right;
+    int l;
+    while(cin>>left>>right>>l)
+    {
+        if(left=='!')break;
+        s[left-97][right-97]=l;
+        s[right-97][left-97]=l;
+    }
+    del(str);
+}
+//排列树深度优先搜索
+void search(int **s,int len,string rm,string res,char start){
+    //到达叶子节点，输出
+    if(rm.size()==0){
+        len+=s[start-97][str-97];
+        if(best>len)best=len;
+        cout<<"节点顺序："<<res<<"距离："<<len<<endl;
+    }
+    else{
+        int x=len;
+        char y;
+        for(int i=0;i<rm.size();i++){
+            x+=s[start-97][rm[i]-97];
+            y=rm[i];
+            res+=y;
+            rm.erase(i,1);
+            search(s,x,rm,res,y);
+            rm.insert(i,1,y);
+            x-=s[start-97][rm[i]-97];
+            res.pop_back();
+        }
+    }
+}
+int main() {    
+    cin>>n>>str;
+    int **s=new int *[n];
+    for(int i=0;i<n;i++)
+    {
+        s[i]=new int [n];
+    }
+
+    for(int i=0;i<n;i++)
+    {
+        for(int j=0;j<n;j++)
+        {
+            s[i][j]=1000000;
+        }
+    }
+    remain.erase(n,26-n);
+    res+=str;
+    getin(s);
+    search(s,0,remain,res,str);
+    cout<<"最短路径为："<<best;
+    return 0;
+}

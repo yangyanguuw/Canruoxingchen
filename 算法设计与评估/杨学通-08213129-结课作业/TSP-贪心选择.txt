@@ -1,0 +1,88 @@
+#include <algorithm>
+#include <iostream>
+#include <ostream>
+#include <string>
+#include <vector>
+using namespace std;
+//数据结构
+int n;//城市数
+int **s;//邻接矩阵
+int best=10000000;//最短路径
+char str;//开始城市
+string res;//访问城市次序
+string remain="abcdefghigklmnopqrstuvwxyz";//剩余未访问城市列表
+bool exist(char b)
+{
+    for(int i=0;i<remain.length();i++)
+    {
+        if(remain[i]==b)return true;
+    }
+    return false;
+}
+void del(char b)
+{
+    for(int i=0;i<remain.length();i++)
+    {
+        if(remain[i]==b)remain.erase(i,1);
+    }
+} 
+void getin(int **s)
+{
+    char left;
+    char right;
+    int l;
+    while(cin>>left>>right>>l)
+    {
+        if(left=='!')break;
+        s[left-97][right-97]=l;
+        s[right-97][left-97]=l;
+    }
+    del(str);
+}
+//贪心搜索，每次到达一个城市，选取当前城市最小出度边
+void search(int **s,int len,string rm,string res,char start){
+    if(rm.size()==0){
+        len+=s[start-97][str-97];
+        if(best>len)best=len;
+        cout<<"节点顺序："<<res<<"距离："<<len<<endl;
+    }
+    else{
+        int x=len;
+        char y;
+        int j;
+        int min=100000;
+        for(int i=0;i<rm.size();i++){
+            //搜索当前城市的最小出度
+            if(min>s[start-97][rm[i]-97]){
+                min=s[start-97][rm[i]-97];
+                y=rm[i];
+                j=i;
+            }
+        }
+        x+=min;
+        res+=y;
+        rm.erase(j,1);
+        search(s,x,rm,res,y);
+    }
+}
+int main() {    
+    cin>>n>>str;
+    s=new int *[n];
+    for(int i=0;i<n;i++)
+    {
+        s[i]=new int [n];
+    }
+
+    for(int i=0;i<n;i++)
+    {
+        for(int j=0;j<n;j++)
+        {
+            s[i][j]=1000000;
+        }
+    }
+    remain.erase(n,26-n);
+    res+=str;
+    getin(s);
+    search(s,0,remain,res,str);
+    return 0;
+}

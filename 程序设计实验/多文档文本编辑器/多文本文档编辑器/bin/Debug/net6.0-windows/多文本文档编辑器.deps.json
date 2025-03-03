@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v6.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v6.0": {
+      "多文本文档编辑器/1.0.0": {
+        "runtime": {
+          "多文本文档编辑器.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "多文本文档编辑器/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

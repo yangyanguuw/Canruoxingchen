@@ -1,0 +1,121 @@
+#include <iostream>
+#include <queue>
+#include <string>
+#include <vector>
+using namespace std;
+//数据结构
+struct flag{
+    int cost;//当前代价
+    int out;//出度
+    char city;//当前城市
+    string rpoint;//剩余节点
+    string result;//结果
+};//状态节点
+struct com{
+    bool operator()(flag &a,flag &b){
+        return (a.cost+a.out)<(b.cost+b.out);
+    }
+};//优先队列的比较方法
+
+int n;//城市个数
+int **s;//城市邻接矩阵
+int best=10000000;//最短路径
+char start;//出发城市
+string city_remain="abcdefghigklmnopqrstuvwxyz";//未访问城市
+flag root;//根结点
+priority_queue<flag,vector<flag>,com> flag_list;//优先队列，存放每个状态节点
+
+
+void del(char b)
+{
+    for(int i=0;i<city_remain.length();i++)
+    {
+        if(city_remain[i]==b)city_remain.erase(i,1);
+    }
+} 
+//输入函数
+void getin()
+{
+    char left;
+    char right;
+    int l;
+    while(cin>>left>>right>>l)
+    {
+        if(left=='!')break;
+        s[left-97][right-97]=l;
+        s[right-97][left-97]=l;
+    }
+    del(start);
+}
+//计算剩余城市的最小出度和
+int out(string rm){
+    int sum=0;
+    int min;
+    for(int i=0;i<rm.size();i++){
+        min=s[rm[i]-97][start-97];
+        for(int j=0;j<rm.size();j++)
+        {
+            if(i!=j&&s[rm[i]-97][rm[j]-97]<min)
+            {
+                min=s[rm[i]-97][rm[j]-97];
+            }
+        }
+        sum+=min;
+    }
+    return sum;
+}
+
+//路径查找函数
+void search(){
+    flag insert;
+    int rcost;
+    int rout;
+    char y;
+    while(flag_list.size()!=0)
+    {
+        root=flag_list.top();
+        flag_list.pop();
+        //广度优先遍历
+        for(int i=0;i<root.rpoint.size();i++){
+            rcost=root.cost+s[root.rpoint[i]-97][root.city-97];
+            y=root.rpoint[i];
+            root.rpoint.erase(i,1);
+            rout=out(root.rpoint);
+            insert={rcost,rout,y,root.rpoint,root.result+y};
+            flag_list.push(insert);//入队
+            root.rpoint.insert(i,1,y);
+        }
+        //到达根结点，判断是否剪枝
+        if(root.rpoint.size()==0){
+            if(best>root.cost+s[root.city-97][start-97])
+            {
+                best=root.cost+s[root.city-97][start-97];
+                cout<<root.result<<best<<endl;
+            }
+        }
+    }
+}
+int main() {    
+    cin>>n>>start;
+    s=new int *[n];
+    for(int i=0;i<n;i++)
+    {
+        s[i]=new int [n];
+    }
+
+    for(int i=0;i<n;i++)
+    {
+        for(int j=0;j<n;j++)
+        {
+            s[i][j]=1000000;
+        }
+    }
+    city_remain.erase(n,26-n);
+    getin();
+    root={0,out(city_remain),start,city_remain};
+    root.result+=start;
+    flag_list.push(root);
+    search();
+    cout<<"最短路径为："<<best;
+    return 0;
+}
