@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>多文本文档编辑器</id>
+    <version>1.0.0</version>
+    <authors>多文本文档编辑器</authors>
+    <description>Package Description</description>
+    <dependencies>
+      <group targetFramework="net6.0-windows7.0" />
+    </dependencies>
+    <frameworkReferences>
+      <group targetFramework="net6.0-windows7.0">
+        <frameworkReference name="Microsoft.WindowsDesktop.App.WindowsForms" />
+      </group>
+    </frameworkReferences>
+  </metadata>
+  <files>
+    <file src="E:\程序设计实验\多文本文档编辑器\bin\Debug\net6.0-windows\多文本文档编辑器.runtimeconfig.json" target="lib\net6.0-windows7.0\多文本文档编辑器.runtimeconfig.json" />
+    <file src="E:\程序设计实验\多文本文档编辑器\bin\Debug\net6.0-windows\多文本文档编辑器.dll" target="lib\net6.0-windows7.0\多文本文档编辑器.dll" />
+  </files>
+</package>

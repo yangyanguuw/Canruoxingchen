@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "82c49021-3e37-441d-b261-28b78b68a75d": {
+      "ProjectGuid": "82c49021-3e37-441d-b261-28b78b68a75d",
+      "DisplayName": "计算器",
+      "ColorIndex": 0
+    }
+  },
+  "NextColorIndex": 1
+}
