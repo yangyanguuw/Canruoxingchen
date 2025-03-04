@@ -1,0 +1,224 @@
+#include <reg51.h>
+#include <intrins.h>                    
+unsigned char code table[] = {0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f,0x00};
+unsigned char count = 0;//定时器 计数变量 
+unsigned char time[] = { 0,0,0 };//初始显示的时间  16-09-50 
+unsigned char p = 0;//调整时间时候，将要调整的位数 
+unsigned char num = 0;//按键接收值 
+unsigned char flag = 1;//删除键标志位 
+unsigned char state = 0;//state=0 显示时间模式，state=1 调整时间模式 
+unsigned char change = 0;//change=0 24时显示时间，change=1 12时显示
+void delay(unsigned int z)
+{
+	unsigned int x, y;
+	for (x = z; x > 0; x--)
+		for (y = 110; y > 0; y--);
+}
+void disp()//数码管显示函数 
+{
+	P2 = 0x7f;
+	P0 = table[time[0] / 10];
+	delay(3);
+
+	P2 = _crol_(P2, -1);
+	P0 = table[time[0] % 10];
+	delay(3);
+
+	P2 = _crol_(P2, -1);
+	P0 = 0x40;
+	delay(3);
+
+	P2 = _crol_(P2, -1);
+	P0 = table[time[1] / 10];
+	delay(3);
+
+	P2 = _crol_(P2, -1);
+	P0 = table[time[1] % 10];
+	delay(3);
+
+	P2 = _crol_(P2, -1);
+	P0 = 0x40;
+	delay(3);
+
+	P2 = _crol_(P2, -1);
+	P0 = table[time[2] / 10];
+	delay(3);
+
+	P2 = _crol_(P2, -1);
+	P0 = table[time[2] % 10];
+	delay(3);
+
+	P0 = 0xff;
+}
+void keyscan()//按键扫描函数 
+{
+	P2 = 0xfe;
+	while ((P2 & 0xf0) != 0xf0)
+	{
+		delay(3);
+
+		while ((P2 & 0xf0) != 0xf0)
+		{
+
+			switch (P2)
+			{
+			case 0xee: num = 1;	break;
+			case 0xde: num = 2; break;
+			case 0xbe: num = 3; break;
+			}
+			if (state && flag)
+			{ 
+				p++;	
+			}
+			else flag=1;
+			delay(300);
+			while ((P2 & 0xf0) != 0xf0) disp();
+		}
+	}
+
+	P2 = 0xfd;
+	while ((P2 & 0xf0) != 0xf0)
+	{
+		delay(3);
+
+		while ((P2 & 0xf0) != 0xf0)
+		{
+
+			switch (P2)
+			{
+			case 0xed: num = 4; break;
+			case 0xdd: num = 5; break;
+			case 0xbd: num = 6; break;
+			case 0x7d: num = 0; break;
+			}
+			if (state && flag)
+			{ 
+				p++;
+			}
+			else flag=1;
+			delay(300);
+			while ((P2 & 0xf0) != 0xf0) disp();
+		}
+	}
+
+	P2 = 0xfb;
+	while ((P2 & 0xf0) != 0xf0)
+	{
+		delay(3);
+
+		while ((P2 & 0xf0) != 0xf0)
+		{
+
+			switch (P2)
+			{
+			case 0xeb: num = 7; break;
+			case 0xdb: num = 8; break;
+			case 0xbb: num = 9; break;
+			}
+			if (state && flag)
+			{ 
+				p++;
+			}
+			else flag=1;
+			delay(300);
+			while ((P2 & 0xf0) != 0xf0) disp();
+		}
+	}
+
+	P2 = 0xf7;
+	while ((P2 & 0xf0) != 0xf0)
+	{
+		delay(3);
+
+		while ((P2 & 0xf0) != 0xf0)
+		{
+
+			switch (P2)
+			{
+			case 0xb7: num = 0; flag=0; break;
+			}
+			if (state && flag)
+			{ 
+				p++;
+			}
+
+			delay(300);
+			while ((P2 & 0xf0) != 0xf0) disp();
+		}
+	}
+}
+void change_time()//调整时间模式 计算函数 
+{
+	if (state)
+	{
+		switch (p)
+		{
+		case 1:time[0] = (num * 10 + time[0] % 10); break;//num接受按键的值，小时的十位上改为num的值，个位不变 
+		case 2:time[0] = (num + (time[0] / 10 * 10)); break;//小时的个位上改为num的值，十位不变 
+		case 3:time[1] = (num * 10 + time[1] % 10); break;//num接受按键的值，分钟的十位上改为num的值，个位不变 
+		case 4:time[1] = (num + (time[1] / 10 * 10)); break;//分钟的个位上改为num的值，十位不变
+		case 5:time[2] = (num * 10 + time[2] % 10); break;//num接受按键的值，秒的十位上改为num的值，个位不变 
+		case 6:time[2] = (num + (time[2] / 10 * 10)); break;//秒的个位上改为num的值，十位不变
+		}
+		if (p >= 6)//全部调整完时间，进入正常时间显示模式，并打开定时器 
+		{
+			state = 0;
+			TR1 = 1;
+			p = 0;
+		}
+	}
+}
+void init_timer1()
+{
+	TMOD = 0x15;
+	IE = 0x85;
+	IP = 0x04;
+	TL1 = (65536 - 50000) % 256;
+	TH1 = (65536 - 50000) / 256;
+	TR1 = 1;
+	ET1 = 1;
+	EA = 1;
+}
+void main()
+{
+	init_timer1();//定时器中断初始化 
+	while (1)
+	{
+		disp();
+		keyscan();
+		change_time();
+	}
+}
+void TIME_1() interrupt 3//定时器计数 
+{
+	TL1 = (65536 - 50000) % 256;	//50ms 
+	TH1 = (65536 - 50000) / 256;
+	count++;
+	if (change) time[0] %= 12;//保证小时小于12 
+	else time[0] %= 24;//保证小时小于12 
+	time[1] %= 60;//保证分钟用于小于60 
+	if (count == 20)//到达1s 
+	{
+		count = 0;
+		time[2]++;//秒加一 
+		if (time[2] >= 60)//秒进位 
+		{
+			time[2] = 0;//秒清零 
+			time[1]++;//分加一 
+			if (time[1] >= 60)//分进位 
+			{
+				time[1] = 0;//分清零 
+				time[0]++;//小时加一 
+			}
+		}
+	}
+}
+void int0() interrupt 0//进入调整时间模式 
+{
+	state = 1;
+	TR1 = 0;//关闭定时器 
+}
+void int1() interrupt 2//切换24-12时间显示 
+{
+	change = ~change;
+}
