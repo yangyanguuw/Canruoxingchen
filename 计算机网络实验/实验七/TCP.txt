@@ -1,0 +1,155 @@
+客户端
+
+
+#include <Winsock2.h>
+
+#include <stdio.h>
+
+#pragma comment(lib,"ws2_32.lib")
+
+int main(){
+
+WORD wVersionRequested; // 指定准备加载的Winsock库版本
+
+WSADATA wsaData; // Winsock库版本信息的结构体
+
+wVersionRequested = MAKEWORD( 1, 1);
+
+int err = WSAStartup( wVersionRequested, &wsaData ); // 加载套接字库
+
+if ( err != 0 ) { return 0;}
+
+if ( LOBYTE( wsaData.wVersion ) != 1 ||HIBYTE( wsaData.wVersion ) != 1 ) {
+
+WSACleanup( );
+
+// 释放为该应用程序分配的资源，终止对WinSock动态库的使用
+
+return 0;
+
+}
+
+SOCKET sockClient=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
+
+// 创建套接字。AF_INET表示TCP/IP协议
+
+// SOCK_STREAM表示TCP连接，SOCK_DGRAM表示UDP连接
+
+//第三个参数为零表示自动选择协议
+
+SOCKADDR_IN addrSrv; //定义一个地址结构体的变量
+
+addrSrv.sin_addr.S_un.S_addr=inet_addr("192.168.220.199");
+
+addrSrv.sin_family = AF_INET;
+
+addrSrv.sin_port = htons(6000);
+
+connect(sockClient,(SOCKADDR*)&addrSrv,sizeof(SOCKADDR));
+
+//向服务器发出连接请求
+
+char recvBuf[1000];
+
+recv(sockClient,recvBuf,100,0); //接收数据
+
+printf("%s\n",recvBuf);
+
+send(sockClient,"Hello!",strlen("Hello!")+1,0); //发送数据
+
+closesocket(sockClient); //关闭套接字
+
+WSACleanup();
+
+system("pause");
+return 0;
+
+}
+
+
+
+
+服务器
+
+
+#include <Winsock2.h>
+
+#include <stdio.h>
+
+#pragma comment(lib,"ws2_32.lib")
+
+int main(){
+
+WORD wVersionRequested; // 指定准备加载的Winsock库版本
+
+WSADATA wsaData; // Winsock库版本信息的结构体
+
+wVersionRequested = MAKEWORD( 1, 1);
+
+int err = WSAStartup( wVersionRequested, &wsaData ); // 加载套接字库
+
+if ( err != 0 ) { return 0;}
+
+if ( LOBYTE( wsaData.wVersion ) != 1 ||
+
+HIBYTE( wsaData.wVersion ) != 1 ) {
+
+WSACleanup( );
+
+// 释放为该应用程序分配的资源，终止对WinSock动态库的使用
+
+return 0;
+
+}
+
+SOCKET sockSrv=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
+
+// 创建套接字AF_INET表示TCP/IP协议
+
+// SOCK_STREAM表示TCP连接，SOCK_DGRAM表示UDP连接
+
+// 第三个参数为零表示自动选择协议
+
+SOCKADDR_IN addrSrv; // 定义一个地址结构体的变量
+
+addrSrv.sin_addr.S_un.S_addr=inet_addr("192.168.220.199");
+
+addrSrv.sin_family=AF_INET;
+
+addrSrv.sin_port=htons(6000);
+
+//htons把一个u_short类型从主机字节序转换为网络字节序
+
+bind(sockSrv,(SOCKADDR*)&addrSrv,sizeof(SOCKADDR)); //将套接字绑定到本地的某个地址和端口上
+
+listen(sockSrv,5); //将指定的套接字设定为监听模式
+
+SOCKADDR_IN addrClient;
+
+int len=sizeof(SOCKADDR);
+
+while(1) {
+
+SOCKET sockConn=accept(sockSrv,(SOCKADDR*)&addrClient,&len);
+
+//接受客户端发送的连接请求
+
+char sendBuf[100];
+
+sprintf(sendBuf,"Welcome %s to here",inet_ntoa(addrClient.sin_addr));
+
+send(sockConn,sendBuf,strlen(sendBuf)+1,0);
+
+//通过一个已建立连接的套接字发送数据
+
+char recvBuf[100];
+
+recv(sockConn,recvBuf,100,0); //从一个已建立连接的套接字接收数据
+
+printf("%s\n",recvBuf);
+
+closesocket(sockConn);
+
+}
+return 0;
+}
